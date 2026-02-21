@@ -4,27 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Daily Glitch | Matrix Decrypt</title>
+    
+    <meta property="og:title" content="The Daily Glitch">
+    <meta property="og:description" content="Can you decrypt the daily anomaly? One attempt. 24 hours.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80">
+
     <style>
-        :root { --matrix-green: #00FF41; --dark-green: #003B00; }
-        body { background: #000; margin: 0; padding: 0; overflow: hidden; font-family: 'Courier New', monospace; }
+        :root { 
+            --matrix-green: #00FF41; 
+            --dark-green: #003B00; 
+            --soft-green: #008F11;
+        }
+
+        body { 
+            background: #000; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            font-family: 'Courier New', Courier, monospace; 
+            color: var(--matrix-green);
+        }
         
         /* The Rain Canvas */
         #q { position: fixed; top: 0; left: 0; z-index: -1; }
 
-        /* Game UI */
-        #main-wrapper { display: flex; align-items: center; justify-content: center; height: 100vh; width: 100%; }
-        #game-box { background: rgba(0, 0, 0, 0.85); border: 2px solid var(--matrix-green); padding: 30px; text-align: center; box-shadow: 0 0 30px var(--dark-green); max-width: 400px; z-index: 5; }
-        
-        input { background: #000; border: 1px solid var(--matrix-green); color: var(--matrix-green); padding: 12px; font-size: 1.5rem; text-align: center; width: 80%; outline: none; margin-bottom: 15px; text-transform: uppercase; }
-        button { background: var(--matrix-green); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin: 5px; }
-        button:hover { background: #fff; box-shadow: 0 0 10px #fff; }
+        /* Game UI Layout */
+        #main-wrapper { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            width: 100%; 
+        }
 
-        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 20; }
-        #modal-content { border: 1px solid var(--matrix-green); padding: 30px; background: #000; max-width: 320px; color: var(--matrix-green); }
+        #game-box { 
+            background: rgba(0, 0, 0, 0.9); 
+            border: 1px solid var(--matrix-green); 
+            padding: 40px; 
+            text-align: center; 
+            box-shadow: 0 0 20px var(--dark-green); 
+            max-width: 450px; 
+            z-index: 5; 
+        }
+
+        h1 { font-size: 1.2rem; margin-bottom: 30px; border-bottom: 1px solid var(--dark-green); padding-bottom: 10px; }
         
+        #scrambled { 
+            font-size: 2.8rem; 
+            letter-spacing: 12px; 
+            margin-bottom: 30px; 
+            color: #fff; 
+            text-shadow: 0 0 8px var(--matrix-green);
+            font-weight: bold;
+        }
+        
+        input { 
+            background: #000; 
+            border: 1px solid var(--matrix-green); 
+            color: var(--matrix-green); 
+            padding: 15px; 
+            font-size: 1.8rem; 
+            text-align: center; 
+            width: 85%; 
+            outline: none; 
+            margin-bottom: 20px; 
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        button { 
+            background: var(--matrix-green); 
+            color: #000; 
+            border: none; 
+            padding: 12px 25px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        button:hover { 
+            background: #fff; 
+            box-shadow: 0 0 15px #fff; 
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Instructions Modal */
+        #modal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.98); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 20; 
+        }
+
+        #modal-content { 
+            border: 1px solid var(--matrix-green); 
+            padding: 40px; 
+            background: #000; 
+            max-width: 350px; 
+            line-height: 1.6;
+        }
+
         .hidden { display: none !important; }
-        .success { color: var(--matrix-green); }
-        .fail { color: #ff0000; }
+        .success { color: var(--matrix-green); text-shadow: 0 0 10px var(--matrix-green); }
+        .fail { color: #ff3333; text-shadow: 0 0 10px #ff3333; }
+
+        #share-area { margin-top: 30px; border-top: 1px solid var(--dark-green); padding-top: 20px; }
     </style>
 </head>
 <body>
@@ -33,85 +129,113 @@
 
     <div id="modal">
         <div id="modal-content">
-            <h2>> SYSTEM_INIT</h2>
-            <p>1. Identify the daily scrambled signal.</p>
-            <p>2. You have <b>one</b> attempt to decrypt.</p>
-            <p>3. Failure results in immediate lockout.</p>
-            <button onclick="closeModal()">[ ENTER THE SOURCE ]</button>
+            <h2 style="margin-top:0">> LOGIN_PROTOCOL</h2>
+            <p>A glitch in the system has scrambled the daily access key.</p>
+            <p><b>1.</b> Identify the correct 5-letter sequence.</p>
+            <p><b>2.</b> You have <u>ONE</u> attempt per day.</p>
+            <p><b>3.</b> Failure will lock the node for 24 hours.</p>
+            <button onclick="closeModal()">[ INITIALIZE ]</button>
         </div>
     </div>
 
     <div id="main-wrapper">
         <div id="game-box">
-            <h1 id="date-header">ANOMALY DETECTED</h1>
-            <p>DECODE SIGNAL:</p>
-            <div id="scrambled" style="font-size: 2.5rem; letter-spacing: 10px; margin-bottom: 25px; color: #fff; text-shadow: 0 0 10px var(--matrix-green);"></div>
+            <h1 id="date-header">NODE_ANOMALY_RUNNING</h1>
+            <p style="font-size: 0.8rem; color: var(--soft-green);">INPUT SIGNAL DETECTED:</p>
+            <div id="scrambled"></div>
             
             <input type="text" id="user-input" maxlength="5" autocomplete="off" placeholder="*****">
             <br>
-            <button onclick="submitGuess()">EXECUTE DECRYPT</button>
+            <button id="submit-btn" onclick="submitGuess()">EXECUTE DECRYPT</button>
 
             <div id="result-msg"></div>
             <div id="share-area" class="hidden">
-                <button onclick="shareResults()" style="background: #008F11; color: white;">SHARE STATUS</button>
+                <p style="font-size: 0.8rem;">TRANSMIT RESULTS TO THE NETWORK:</p>
+                <button onclick="shareResults()" style="background: var(--soft-green); color: white;">COPY STATUS REPORT</button>
             </div>
         </div>
     </div>
 
     <script>
         // --- 1. THE DIGITAL RAIN ENGINE ---
-        const s = window.screen;
-        const width = q.width = s.width;
-        const height = q.height = s.height;
+        const canvas = document.getElementById('q');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
         const letters = Array(256).join(1).split('');
         const draw = function () {
-            q.getContext('2d').fillStyle = 'rgba(0,0,0,.05)';
-            q.getContext('2d').fillRect(0,0,width,height);
-            q.getContext('2d').fillStyle = '#0F0';
+            ctx.fillStyle = 'rgba(0,0,0,.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = '10px Courier New';
             letters.map(function(y_pos, index){
                 const text = String.fromCharCode(3e4 + Math.random() * 33);
                 const x_pos = index * 10;
-                q.getContext('2d').fillText(text, x_pos, y_pos);
+                ctx.fillText(text, x_pos, y_pos);
                 letters[index] = (y_pos > 758 + Math.random() * 1e4) ? 0 : y_pos + 10;
             });
         };
         setInterval(draw, 33);
 
         // --- 2. THE GAME LOGIC ---
-        const codes = ["NEO11", "TRIN8", "SMITH", "ORACL", "MORPH", "ZION0", "KEYMK", "VNDTA", "TANK1", "CYPHR"];
+        const codes = ["NEO11", "TRIN8", "SMITH", "ORACL", "MORPH", "ZION0", "KEYMK", "VNDTA", "TANK1", "CYPHR", "AGENT", "SHIFT", "LOGIC", "PILOT", "GHOST"];
         const today = new Date().toDateString();
-        document.getElementById('date-header').innerText = `NODE_${new Date().getMonth() + 1}${new Date().getDate()}`;
+        
+        // Dynamic Date Header
+        const d = new Date();
+        document.getElementById('date-header').innerText = `NODE_${d.getMonth()+1}.${d.getDate()}.${d.getFullYear()}`;
 
+        // Deterministic Daily Hash (Everyone gets the same code today)
         let hash = 0;
-        for (let i = 0; i < today.length; i++) hash = today.charCodeAt(i) + ((hash << 5) - hash);
+        for (let i = 0; i < today.length; i++) {
+            hash = today.charCodeAt(i) + ((hash << 5) - hash);
+        }
         const target = codes[Math.abs(hash % codes.length)];
         
+        // Display scrambled version
         document.getElementById('scrambled').innerText = target.split('').sort(() => 0.5 - Math.random()).join('');
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        function closeModal() { 
+            document.getElementById('modal').style.display = 'none'; 
+        }
 
         function submitGuess() {
             const val = document.getElementById('user-input').value.toUpperCase();
             const msg = document.getElementById('result-msg');
             const share = document.getElementById('share-area');
+            const btn = document.getElementById('submit-btn');
             const inputField = document.getElementById('user-input');
 
-            inputField.disabled = true; // One shot only
+            if (val.length < 5) {
+                alert("Sequence incomplete.");
+                return;
+            }
+
+            inputField.disabled = true; 
+            btn.disabled = true;
 
             if (val === target) {
-                msg.innerHTML = "<h2 class='success'>ACCESS GRANTED</h2>";
+                msg.innerHTML = "<h2 class='success'>> ACCESS_GRANTED</h2><p>You have bypassed the simulation.</p>";
             } else {
-                msg.innerHTML = `<h2 class='fail'>SIGNAL LOST</h2><p>Correct Key: ${target}</p>`;
+                msg.innerHTML = `<h2 class='fail'>> CONNECTION_LOST</h2><p>Correct Sequence: ${target}</p>`;
             }
             share.classList.remove('hidden');
         }
 
         function shareResults() {
             const val = document.getElementById('user-input').value.toUpperCase();
-            const result = (val === target) ? "🟩" : "🟥";
-            const text = `The Daily Glitch ${new Date().toLocaleDateString()}\nStatus: ${result} [DECRYPTED]\n\nPlay here: ${window.location.href}`;
-            navigator.clipboard.writeText(text);
-            alert("Status copied to clipboard!");
+            const icon = (val === target) ? "🟩" : "🟥";
+            const text = `The Daily Glitch ${new Date().toLocaleDateString()}\nStatus: ${icon} [DECRYPTED]\n\nPlay the Matrix: ${window.location.href}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert("System status copied to clipboard!");
+            });
         }
     </script>
 </body>
