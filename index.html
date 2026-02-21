@@ -3,64 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Daily Glitch</title>
+    <title>The Daily Glitch | Matrix Decrypt</title>
     <style>
         :root { --matrix-green: #00FF41; --dark-green: #003B00; }
-        body { background: #000; color: var(--matrix-green); font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        body { background: #000; margin: 0; padding: 0; overflow: hidden; font-family: 'Courier New', monospace; }
         
-        #game-box { border: 2px solid var(--matrix-green); padding: 30px; text-align: center; box-shadow: 0 0 20px var(--dark-green); max-width: 400px; }
+        /* The Rain Canvas */
+        #q { position: fixed; top: 0; left: 0; z-index: -1; }
+
+        /* Game UI */
+        #main-wrapper { display: flex; align-items: center; justify-content: center; height: 100vh; width: 100%; }
+        #game-box { background: rgba(0, 0, 0, 0.85); border: 2px solid var(--matrix-green); padding: 30px; text-align: center; box-shadow: 0 0 30px var(--dark-green); max-width: 400px; z-index: 5; }
+        
         input { background: #000; border: 1px solid var(--matrix-green); color: var(--matrix-green); padding: 12px; font-size: 1.5rem; text-align: center; width: 80%; outline: none; margin-bottom: 15px; text-transform: uppercase; }
-        
-        button { background: var(--matrix-green); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.3s; }
+        button { background: var(--matrix-green); color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin: 5px; }
         button:hover { background: #fff; box-shadow: 0 0 10px #fff; }
 
-        /* Modal / Instructions */
-        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 10; }
-        #modal-content { border: 1px solid var(--matrix-green); padding: 30px; background: #000; max-width: 300px; text-align: left; }
-
+        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 20; }
+        #modal-content { border: 1px solid var(--matrix-green); padding: 30px; background: #000; max-width: 320px; color: var(--matrix-green); }
+        
         .hidden { display: none !important; }
-        #share-area { margin-top: 20px; padding: 10px; border-top: 1px solid var(--dark-green); }
+        .success { color: var(--matrix-green); }
+        .fail { color: #ff0000; }
     </style>
 </head>
 <body>
 
+    <canvas id="q"></canvas>
+
     <div id="modal">
         <div id="modal-content">
-            <h2>> INSTRUCTIONS</h2>
-            <p>1. A scrambled code is detected.</p>
-            <p>2. You have 1 attempt to decrypt the 5-letter daily sequence.</p>
-            <p>3. Fail, and the system locks for 24 hours.</p>
-            <button onclick="closeModal()">[ ACCEPT MISSION ]</button>
+            <h2>> SYSTEM_INIT</h2>
+            <p>1. Identify the daily scrambled signal.</p>
+            <p>2. You have <b>one</b> attempt to decrypt.</p>
+            <p>3. Failure results in immediate lockout.</p>
+            <button onclick="closeModal()">[ ENTER THE SOURCE ]</button>
         </div>
     </div>
 
-    <div id="game-box">
-        <h1 id="date-header">SYSTEM ANOMALY</h1>
-        <p>SCRAMBLED SIGNAL:</p>
-        <div id="scrambled" style="font-size: 2rem; letter-spacing: 8px; margin-bottom: 20px; color: #fff;"></div>
-        
-        <input type="text" id="user-input" maxlength="5" autocomplete="off">
-        <br>
-        <button onclick="submitGuess()">DECRYPT</button>
+    <div id="main-wrapper">
+        <div id="game-box">
+            <h1 id="date-header">ANOMALY DETECTED</h1>
+            <p>DECODE SIGNAL:</p>
+            <div id="scrambled" style="font-size: 2.5rem; letter-spacing: 10px; margin-bottom: 25px; color: #fff; text-shadow: 0 0 10px var(--matrix-green);"></div>
+            
+            <input type="text" id="user-input" maxlength="5" autocomplete="off" placeholder="*****">
+            <br>
+            <button onclick="submitGuess()">EXECUTE DECRYPT</button>
 
-        <div id="result-msg"></div>
-
-        <div id="share-area" class="hidden">
-            <button onclick="shareResults()" style="background: #008F11; color: white;">SHARE SYSTEM STATUS</button>
+            <div id="result-msg"></div>
+            <div id="share-area" class="hidden">
+                <button onclick="shareResults()" style="background: #008F11; color: white;">SHARE STATUS</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const codes = ["NEO11", "TRIN8", "SMITH", "ORACL", "MORPH", "ZION0", "KEYMK", "VNDTA"];
-        const today = new Date().toDateString();
-        document.getElementById('date-header').innerText = `ANOMALY: ${new Date().toLocaleDateString()}`;
+        // --- 1. THE DIGITAL RAIN ENGINE ---
+        const s = window.screen;
+        const width = q.width = s.width;
+        const height = q.height = s.height;
+        const letters = Array(256).join(1).split('');
+        const draw = function () {
+            q.getContext('2d').fillStyle = 'rgba(0,0,0,.05)';
+            q.getContext('2d').fillRect(0,0,width,height);
+            q.getContext('2d').fillStyle = '#0F0';
+            letters.map(function(y_pos, index){
+                const text = String.fromCharCode(3e4 + Math.random() * 33);
+                const x_pos = index * 10;
+                q.getContext('2d').fillText(text, x_pos, y_pos);
+                letters[index] = (y_pos > 758 + Math.random() * 1e4) ? 0 : y_pos + 10;
+            });
+        };
+        setInterval(draw, 33);
 
-        // Generate daily code based on date hash
+        // --- 2. THE GAME LOGIC ---
+        const codes = ["NEO11", "TRIN8", "SMITH", "ORACL", "MORPH", "ZION0", "KEYMK", "VNDTA", "TANK1", "CYPHR"];
+        const today = new Date().toDateString();
+        document.getElementById('date-header').innerText = `NODE_${new Date().getMonth() + 1}${new Date().getDate()}`;
+
         let hash = 0;
         for (let i = 0; i < today.length; i++) hash = today.charCodeAt(i) + ((hash << 5) - hash);
         const target = codes[Math.abs(hash % codes.length)];
         
-        // Display scrambled version
         document.getElementById('scrambled').innerText = target.split('').sort(() => 0.5 - Math.random()).join('');
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
@@ -69,23 +94,24 @@
             const val = document.getElementById('user-input').value.toUpperCase();
             const msg = document.getElementById('result-msg');
             const share = document.getElementById('share-area');
+            const inputField = document.getElementById('user-input');
+
+            inputField.disabled = true; // One shot only
 
             if (val === target) {
-                msg.innerHTML = "<h2 style='color:var(--matrix-green)'>ACCESS GRANTED</h2>";
-                share.classList.remove('hidden');
+                msg.innerHTML = "<h2 class='success'>ACCESS GRANTED</h2>";
             } else {
-                msg.innerHTML = "<h2 style='color:red'>CONNECTION LOST</h2><p>The correct code was " + target + "</p>";
-                share.classList.remove('hidden');
+                msg.innerHTML = `<h2 class='fail'>SIGNAL LOST</h2><p>Correct Key: ${target}</p>`;
             }
+            share.classList.remove('hidden');
         }
 
         function shareResults() {
-            const guess = document.getElementById('user-input').value.toUpperCase();
-            const status = (guess === target) ? "🟩 SUCCESS" : "🟥 FAILED";
-            const text = `The Daily Glitch ${new Date().toLocaleDateString()}\nStatus: ${status}\n\n[ 🔗 Play: your-link.github.io ]`;
-            
+            const val = document.getElementById('user-input').value.toUpperCase();
+            const result = (val === target) ? "🟩" : "🟥";
+            const text = `The Daily Glitch ${new Date().toLocaleDateString()}\nStatus: ${result} [DECRYPTED]\n\nPlay here: ${window.location.href}`;
             navigator.clipboard.writeText(text);
-            alert("Results copied to clipboard! Paste them on social media.");
+            alert("Status copied to clipboard!");
         }
     </script>
 </body>
